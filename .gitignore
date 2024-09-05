@@ -6,3 +6,7 @@ DIMACS_file_Small_BNN
 
 # code 
 Explanation_cnf_compute2.py
+bnn.py
+Enumerate_explanations_for_all_inputs.py
+Explanation_cnf_compute.py
+Explanation_cnf_enumerate.py
