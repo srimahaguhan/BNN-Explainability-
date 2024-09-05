@@ -1,8 +1,11 @@
-output_table.txt
+# input files 
 mnist-100-bnn_2blk_25_10.cnf
 mnist-100-bnn_1blk_100.cnf
 smallexample_DIMACS
 DIMACS_file_Small_BNN
+
+# output files 
+output_table.txt
 
 # code 
 Explanation_cnf_compute2.py
