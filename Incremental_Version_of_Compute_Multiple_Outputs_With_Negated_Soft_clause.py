@@ -2,60 +2,19 @@ from pysat.formula import WCNF
 from pysat.examples.rc2 import RC2
 from pysat.solvers import Solver
 import time
-from tabulate import tabulate 
-
-def read_cnf_file():
-    file_path = input("Enter the path to the CNF file: ")
-    return file_path
-
-def parse_cnf_manually(content): # Function to read the DIMACS file and return all the cnf clauses 
-    lines = content.strip().split('\n')
-    clauses = []
-    for line in lines:
-        if line.startswith('p cnf'):
-            continue
-        if line.startswith('c'):
-            continue
-        clause = [int(x) for x in line.strip().split()[:-1]]  # Exclude the 0 in the end of each line 
-        if clause:
-            clauses.append(clause)
-    return clauses
-
-def get_input_literals_manually(content): # Function to read the DIMACS file and return the input variables
-    lines = content.strip().split('\n')
-    clauses = []
-    for line in lines:
-        if line.startswith('c ind'):
-            clause = [int(x) for x in line.strip().split()[2:-1]]  # Remove the trailing zero
-            clauses.extend(clause)
-    
-    return clauses
-
-def get_output_literals_manually(content): # Function to read the DIMACS file and return the output variables
-    lines = content.strip().split('\n')
-    clauses = []
-    for line in lines:
-        if line.startswith('c out'):
-            clause = [int(x) for x in line.strip().split()[2:-1]]  # Remove the trailing zero
-            clauses.extend(clause)
-    
-    return clauses
-
-
+from tabulate import tabulate
+from helper_funs import * 
 
 def bnn(cnf_file_path): 
     try:
         with open(cnf_file_path, 'r') as f:
             content = f.read()
-            #print(f"File content:\n{content}")
         clauses = parse_cnf_manually(content) #creating clauses for the bnn
-        #print("made cnf")
-        #print(clauses)
         if not clauses:
             print("No valid clauses found in the file.")
             return
 
-    #two copies of wcnf required, because RC2 solver doesnot support assumptions, to allow for setting the output to  0 and 1.
+        #two copies of wcnf required, because RC2 solver does not support assumptions, to allow for setting the output to 0 and 1.
         wcnf = WCNF()
         wcnf_copy = WCNF()
         for clause in clauses:
@@ -122,7 +81,7 @@ def bnn(cnf_file_path):
                         print("c is true")
                         model = solver.get_model()
                     else:
-                        print("Done with c ==1 instances")
+                        print("Done with c == 1 instances")
                         return
                     
                     #for now we are setting output to 1 
