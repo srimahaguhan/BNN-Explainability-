@@ -307,6 +307,20 @@ def bnn(cnf_file_path, output_file_path):
         print(tabulate(cumulative_table_data, headers=["Output", "SAT_time", "MaxSAT_time", "Explanations", "MM", "No EXP"], tablefmt="grid"))    
       
     
+
+'''if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="BNN script with configurable output path")
+    parser.add_argument("--output", default="/home/guhan/code/output_table.txt", help="Path to the output file")
+    args = parser.parse_args()
+
+    cnf_file_path = read_cnf_file()
+ 
+    start_time = time.time()
+    bnn(cnf_file_path, args.output)  # Pass the output file path to bnn function
+    end_time = time.time()
+ 
+    #print(f"Total execution time: {end_time - start_time} seconds")'''
+
 def main():
     parser = argparse.ArgumentParser(description="BNN script with configurable input and output paths")
     parser.add_argument("--input", required=True, help="Path to the input CNF file")
