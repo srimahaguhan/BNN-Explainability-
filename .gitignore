@@ -13,3 +13,4 @@ bnn.py
 Enumerate_explanations_for_all_inputs.py
 Explanation_cnf_compute.py
 Explanation_cnf_enumerate.py
+Inceremental_Version_of_Compute_Multiple_Outputs.py
