@@ -56,6 +56,7 @@ def bnn(cnf_file_path, output_file_path):
             print("No valid clauses found in the file.")
             return
 
+        #two copies of wcnf required, because RC2 solver doesnot support assumptions, to allow for setting the output to  0 and 1.
         wcnf = WCNF()
         wcnf_copy = WCNF()
         for clause in clauses:
@@ -72,6 +73,9 @@ def bnn(cnf_file_path, output_file_path):
 
     input_vars = get_input_literals_manually(content)
     output_vars = get_output_literals_manually(content)
+    #setting the intended output values; should ideally be read as input
+
+    # making all but one output to be 1 except 110
     #set_output_vars = [-101, -102, -103, -104, -105, 106 , -107 ,-108 , -109, -110]
     set_output_vars = [output_vars[0]]
     #output_var = output_vars[5]
@@ -83,25 +87,30 @@ def bnn(cnf_file_path, output_file_path):
         wcnf.append([output_var])
     else:
         wcnf.append([-output_var])'''
-
+    
+     #clauses_copy is used to incrementally generate multiple input instances 
+    #clauses is used to check if a potential explanation is a real explanation
     clauses_copy = clauses
     blocked_inputs= []
    # blocked_inputs.append((-1 * int(lit)) for lit in model)
+
+   # various parameters to control the number of models, explanations and input instances generated 
     n = 0
     c = 1 
-    N = 8
-    M = 100
-    time_out = 2000
+    N = 8 #bound on number of input instances 
+    M = 100 # bound on number of models generated
+    time_out = 2000 # bound on the total timeout allowed for generating all explanations for all instances 
     time1 =0 
     time2 = 0
     x =0
 
     cumulative_table_data =[]
-    while True:     
+    while True:     # loop for generating explanations for each input instance upto N and time_out   
         table_data = [] 
         SAT_time = 0
         Max_SAT_time = 0
 
+        #creating a g4 solver instance to generate a satisfying input instance that classifies an output to 1 or 0
         with Solver(name='g4', bootstrap_with=clauses_copy, use_timer=True) as solver: # First SAT check (To get a satisfying input instance)
             if n==N:
                 print("Done with all input instances")
@@ -140,7 +149,7 @@ def bnn(cnf_file_path, output_file_path):
             #print(f"Number of variables in the formula:", {solver.nof_vars()})
             #print(f"Number of solver calls: {solver.get_status()}")
 
-
+        # This features_values stores the values of literals corresponding to input instances by extracting it from the input model instanc
         features_values =[]
 
         for j in range(len(input_vars)): # Creating the input instance 
@@ -155,6 +164,8 @@ def bnn(cnf_file_path, output_file_path):
 
         try:   # Solving using MaxSAT to generate all potential explanations 
             #print("started rc2")
+
+            #adds negation of soft clauses as individual unit literals to wncf, which will be used as hardclauses in the rc2 solver
             if c:
                 for var in set_output_vars:
                     wcnf.append([var])
@@ -178,9 +189,12 @@ def bnn(cnf_file_path, output_file_path):
             start_time = time.time()
   
             Explanation_list = []
+             #creating a new g4 solver instance with scope to later check if a potential explanation generated is a real explanation
             with Solver(name='g4', bootstrap_with=clauses , use_timer=True) as solver:
                 m = 0
+                #the following loop incrmentally generates maxsat models of different costs towards generating explanations of different sizes 
                 while(True):
+                    #exiting the loop based on different exit criteria, currently done in a hardcoded way
                     '''if Explanation_list != []: 
                         print("Found an explanation")
                         break'''
@@ -217,7 +231,8 @@ def bnn(cnf_file_path, output_file_path):
                         if features_values[index] in filtered_model:
                             value_exp.append(features_values[index])
                     #all_explanations.append(value_exp)
-            
+                    
+                    # checking if a potential explanation is a real explanation
                     if c:
                         if not solver.solve(assumptions=value_exp + [-ele for ele in set_output_vars]):
                             explanation_abs = [abs(ele) for ele in value_exp]
@@ -261,6 +276,8 @@ def bnn(cnf_file_path, output_file_path):
                         #rc2 = RC2(new_wcnf)
                         x = x +1 
 
+                    '''generating a negation of the maxsat model to block it in the following 
+                     iteration for generating next potential explanation'''
                     next_blocked_maxsat = []    
                     for lit in maxsat_model:
                         var = -1 * int(lit)
@@ -307,19 +324,6 @@ def bnn(cnf_file_path, output_file_path):
         print(tabulate(cumulative_table_data, headers=["Output", "SAT_time", "MaxSAT_time", "Explanations", "MM", "No EXP"], tablefmt="grid"))    
       
     
-
-'''if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="BNN script with configurable output path")
-    parser.add_argument("--output", default="/home/guhan/code/output_table.txt", help="Path to the output file")
-    args = parser.parse_args()
-
-    cnf_file_path = read_cnf_file()
- 
-    start_time = time.time()
-    bnn(cnf_file_path, args.output)  # Pass the output file path to bnn function
-    end_time = time.time()
- 
-    #print(f"Total execution time: {end_time - start_time} seconds")'''
 
 def main():
     parser = argparse.ArgumentParser(description="BNN script with configurable input and output paths")
